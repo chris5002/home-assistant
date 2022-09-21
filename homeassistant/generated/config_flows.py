@@ -100,6 +100,7 @@ FLOWS = {
         "enphase_envoy",
         "environment_canada",
         "epson",
+        "eq3btsmart",
         "escea",
         "esphome",
         "evil_genius_labs",

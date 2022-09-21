@@ -16,6 +16,7 @@ from homeassistant.components.climate import (
     ClimateEntityFeature,
     HVACMode,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_DEVICES,
@@ -30,6 +31,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import PRESET_CLOSED, PRESET_NO_HOLD, PRESET_OPEN, PRESET_PERMANENT_HOLD
+from .homeassistantbleakconnection import HomeAssistantBleakConnection
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -98,6 +100,20 @@ def setup_platform(
     add_entities(devices, True)
 
 
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Handle setup of a config entry."""
+    mac = config_entry.unique_id
+    assert mac is not None
+    _LOGGER.info("Create entity for %s", mac)
+    devices = []
+    devices.append(EQ3BTSmartThermostat(mac, config_entry.title))
+    async_add_entities(devices, update_before_add=True)
+
+
 class EQ3BTSmartThermostat(ClimateEntity):
     """Representation of an eQ-3 Bluetooth Smart thermostat."""
 
@@ -114,7 +130,9 @@ class EQ3BTSmartThermostat(ClimateEntity):
         # We want to avoid name clash with this module.
         self._attr_name = name
         self._attr_unique_id = format_mac(mac)
-        self._thermostat = eq3.Thermostat(mac)
+        self._thermostat = eq3.Thermostat(
+            mac, None, connection_cls=HomeAssistantBleakConnection
+        )
 
     @property
     def available(self) -> bool:
@@ -122,12 +140,12 @@ class EQ3BTSmartThermostat(ClimateEntity):
         return self._thermostat.mode >= 0
 
     @property
-    def current_temperature(self):
+    def current_temperature(self) -> float:
         """Can not report temperature, so return target_temperature."""
         return self.target_temperature
 
     @property
-    def target_temperature(self):
+    def target_temperature(self) -> float:
         """Return the temperature we try to reach."""
         return self._thermostat.target_temperature
 
@@ -149,12 +167,12 @@ class EQ3BTSmartThermostat(ClimateEntity):
         self._thermostat.mode = HA_TO_EQ_HVAC[hvac_mode]
 
     @property
-    def min_temp(self):
+    def min_temp(self) -> float:
         """Return the minimum temperature."""
         return self._thermostat.min_temp
 
     @property
-    def max_temp(self):
+    def max_temp(self) -> float:
         """Return the maximum temperature."""
         return self._thermostat.max_temp
 

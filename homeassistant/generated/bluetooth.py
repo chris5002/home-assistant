@@ -21,6 +21,11 @@ BLUETOOTH: list[dict[str, bool | str | int | list[int]]] = [
         "service_data_uuid": "0000181e-0000-1000-8000-00805f9b34fb",
     },
     {
+        "domain": "eq3btsmart",
+        "service_uuid": "3e135142-654f-9090-134a-a6ff5bb77046",
+        "connectable": True,
+    },
+    {
         "domain": "fjaraskupan",
         "connectable": False,
         "manufacturer_id": 20296,
