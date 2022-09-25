@@ -51,9 +51,6 @@ class EQ3ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in bluetooth.async_discovered_service_info(self.hass, False):
             address = discovery_info.address
-            _LOGGER.info(
-                "Device %s, %s", discovery_info.address, discovery_info.connectable
-            )
             if address in current_addresses or address in self._discovered_devices:
                 continue
             self._discovered_devices[address] = Discovery(

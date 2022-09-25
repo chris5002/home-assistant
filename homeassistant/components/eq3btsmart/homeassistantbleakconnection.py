@@ -11,6 +11,7 @@ import codecs
 import logging
 
 from bleak import BleakClient, BleakError
+from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 import eq3bt as eq3
 
@@ -91,10 +92,10 @@ class HomeAssistantBleakConnection:
             ).result()
             self._conn = None
 
-    async def on_notification(self, handle, data):
+    async def on_notification(self, gatt: BleakGATTCharacteristic, data: bytearray):
         """Handle Callback from a Bluetooth (GATT) request."""
         # The notification handles are off-by-one compared to gattlib and bluepy
-        handle = handle + 1
+        handle = gatt.handle + 1
         _LOGGER.debug(
             "Got notification from %s: %s", handle, codecs.encode(data, "hex")
         )
