@@ -28,7 +28,6 @@ from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import PRESET_CLOSED, PRESET_NO_HOLD, PRESET_OPEN, PRESET_PERMANENT_HOLD
 from .homeassistantbleakconnection import HomeAssistantBleakConnection
@@ -82,22 +81,6 @@ DEVICE_SCHEMA = vol.Schema({vol.Required(CONF_MAC): cv.string})
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {vol.Required(CONF_DEVICES): vol.Schema({cv.string: DEVICE_SCHEMA})}
 )
-
-
-def setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
-) -> None:
-    """Set up the eQ-3 BLE thermostats."""
-    devices = []
-
-    for name, device_cfg in config[CONF_DEVICES].items():
-        mac = device_cfg[CONF_MAC]
-        devices.append(EQ3BTSmartThermostat(mac, name))
-
-    add_entities(devices, True)
 
 
 async def async_setup_entry(

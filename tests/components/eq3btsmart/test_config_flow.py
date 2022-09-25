@@ -38,6 +38,24 @@ async def test_async_step_user_no_devices(hass: HomeAssistant):
     assert result["reason"] == "no_devices_found"
 
 
+async def test_async_step_user_no_new_device(hass: HomeAssistant):
+    """Test async step user no devices discovered with already discovered devices."""
+    with patch(
+        "homeassistant.components.bluetooth.async_discovered_service_info",
+        return_value=[CC_RT_BLE],
+    ):
+        with patch(
+            "homeassistant.components.eq3btsmart.config_flow.EQ3ConfigFlow._async_current_ids",
+            return_value={"00:11:22:33:44:55"},
+        ):
+            result = await hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": config_entries.SOURCE_USER}
+            )
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "no_devices_found"
+
+
 async def test_async_step_user(hass: HomeAssistant):
     """Test async step user device selected."""
     with patch(

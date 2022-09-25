@@ -44,9 +44,11 @@ class EQ3ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
             discovery = self._discovered_devices[address]
 
-            self.context["title_placeholders"] = {"name": discovery.title}
             self._discovery_info = discovery.discovery_info
-            return self._async_get_or_create_entry()
+            return self.async_create_entry(
+                title=discovery.title,
+                data={},
+            )
 
         current_addresses = self._async_current_ids()
         for discovery_info in bluetooth.async_discovered_service_info(self.hass, False):
@@ -87,22 +89,13 @@ class EQ3ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Confirm discovery."""
         if user_input is not None or not onboarding.async_is_onboarded(self.hass):
-            return self._async_get_or_create_entry()
+            return self.async_create_entry(
+                title=self.context["title_placeholders"]["name"],
+                data={},
+            )
 
         self._set_confirm_only()
         return self.async_show_form(
             step_id="bluetooth_confirm",
             description_placeholders=self.context["title_placeholders"],
-        )
-
-    def _async_get_or_create_entry(self):
-        if entry_id := self.context.get("entry_id"):
-            entry = self.hass.config_entries.async_get_entry(entry_id)
-            assert entry is not None
-
-            return self.async_abort(reason="reauth_successful")
-
-        return self.async_create_entry(
-            title=self.context["title_placeholders"]["name"],
-            data={},
         )
