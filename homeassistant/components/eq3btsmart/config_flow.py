@@ -44,7 +44,6 @@ class EQ3ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
             discovery = self._discovered_devices[address]
 
-            _LOGGER.info(address)
             self.context["title_placeholders"] = {"name": discovery.title}
             self._discovery_info = discovery.discovery_info
             return self._async_get_or_create_entry()
@@ -99,32 +98,14 @@ class EQ3ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders=self.context["title_placeholders"],
         )
 
-    async def handle_by_mac_address(self, mac):
-        """Handle check if device is already configured."""
-        self._async_abort_entries_match({CONF_MAC: mac})
-
-        await self.async_set_unique_id(mac)
-        self._abort_if_unique_id_configured()
-
-        return self.async_create_entry(title=mac, data={CONF_MAC: mac})
-
     def _async_get_or_create_entry(self):
-        data = {}
-
         if entry_id := self.context.get("entry_id"):
             entry = self.hass.config_entries.async_get_entry(entry_id)
             assert entry is not None
-
-            self.hass.config_entries.async_update_entry(entry, data=data)
-
-            # Reload the config entry to notify of updated config
-            self.hass.async_create_task(
-                self.hass.config_entries.async_reload(entry.entry_id)
-            )
 
             return self.async_abort(reason="reauth_successful")
 
         return self.async_create_entry(
             title=self.context["title_placeholders"]["name"],
-            data=data,
+            data={},
         )
